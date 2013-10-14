@@ -1,0 +1,13 @@
+#!/bin/bash -e
+
+NGINX_DIR=`pwd`/nginx_temp
+NGINX_CONF=${NGINX_DIR}/conf/nginx.conf
+
+export PATH=$PATH:/usr/local/openresty/nginx/sbin
+mkdir -p ${NGINX_DIR}/{logs,conf}
+
+if [ ! -f ${NGINX_CONF} ]; then
+	ln -s ../../example.conf ${NGINX_CONF}
+fi
+
+nginx -p ${NGINX_DIR}
