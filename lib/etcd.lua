@@ -6,6 +6,7 @@ local Client = {}
 
 local keyPrefix = "/v1/keys"
 
+-- new returns a new etcd.Client object
 function Client:new(url)
   local c = {}
   setmetatable(c, self)
@@ -14,10 +15,12 @@ function Client:new(url)
   return c
 end
 
+-- _keyURL generates the URL for an etcd key based on the base_url and prefix
 function Client:_keyURL(key)
   return self.base_url .. keyPrefix .. "/" .. key
 end
 
+-- _handleRequest unwraps an etcd request
 function Client:_handleRequest(body, code)
   if code ~= 200 then
     local err = {errorCode = code}
@@ -33,6 +36,7 @@ function Client:_handleRequest(body, code)
   return value
 end
 
+-- get grabs a key out of the etcd data store
 function Client:get(key)
   local url = self:_keyURL(key)
   local body, code = http.request(url)
@@ -40,7 +44,7 @@ function Client:get(key)
   return self:_handleRequest(body, code)
 end
 
--- Set 
+-- set places the key and value into the etcd data store
 function Client:set(key, value)
   local url = self:_keyURL(key)
   local body, code = http.request(url, "value="..value)
