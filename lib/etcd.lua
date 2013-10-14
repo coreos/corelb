@@ -65,6 +65,4 @@ function Client:set(key, value)
   return self:_handleRequest(body, code)
 end
 
-return {
-  Client = Client
-}
+return Client
