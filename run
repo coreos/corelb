@@ -6,7 +6,7 @@ NGINX_CONF=${NGINX_DIR}/conf/nginx.conf
 export PATH=$PATH:/usr/local/openresty/nginx/sbin
 mkdir -p ${NGINX_DIR}/{logs,conf}
 
-if [ ! -f ${NGINX_CONF} ]; then
+if [ ! -h ${NGINX_CONF} ]; then
 	ln -s ../../nginx.conf ${NGINX_CONF}
 fi
 
