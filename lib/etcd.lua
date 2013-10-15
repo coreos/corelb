@@ -15,6 +15,14 @@
 local http = require("http")
 local cjson = require("cjson")
 
+local debug = false
+
+local dprint = function(msg)
+  if debug == true then
+    print("etcd: " .. msg)
+  end
+end
+
 -- Client implements a new etcd Client
 local Client = {}
 
@@ -55,6 +63,8 @@ function Client:get(key)
   local url = self:_keyURL(key)
   local body, code = http.request(url)
 
+  dprint("get: " .. url)
+
   return self:_handleRequest(body, code)
 end
 
@@ -62,6 +72,7 @@ end
 function Client:set(key, value)
   local url = self:_keyURL(key)
   local body, code = http.request(url, "value="..value)
+  dprint("set: " .. url .. " value: " .. value)
   return self:_handleRequest(body, code)
 end
 
