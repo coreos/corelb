@@ -18,7 +18,7 @@ local initPrefix = "coreos.com/coreinit/"
 local machinePrefix = "machines/"
 local systemPrefix = "system/"
 
-local debug = true
+local debug = false
 
 local dprint = function(msg)
   if debug == true then
@@ -35,19 +35,37 @@ function Machine:new(init, key)
 
   self._id = key
   self._etcd = init._etcd
+
   return m
 end
 
 function Machine:_key()
-  return initPrefix .. machinePrefix .. self.id
+  return initPrefix .. machinePrefix .. self._id
+end
+
+function Machine:_getAddrs()
+  return self._etcd:get(self:_key(self._id) .. "/network")
+end
+
+-- sync grabs the data on this machine from the datastore and caches it
+function Machine:sync()
+  local value, err = self:_getAddrs()
+  if err ~= nil then
+    dprint("problem getting addrs for machine " .. self._id .. ": " .. err.errorCode)
+    return err
+  end
+
+  self._addrs = value.value
+
+  return nil
+end
+
+function Machine:addrs()
+  return self._addrs
 end
 
 function Machine:id()
   return self._id
-end
-
-function Machine:ips()
-  return self._etcd:get(self:_key(self._id) .. "/network")
 end
 
 local Unit = {}
@@ -76,12 +94,17 @@ function Unit:machines()
   local dir, err = self._etcd:get(self:_unitKey(self._unit) .. "/")
   if err ~= nil then
     dprint("Failed to get the unit")
-    return dir, err
+    return nil, err
   end
 
   local machines = {}
   for i, machine in ipairs(dir) do
     machine = self._init:machine(basename(machine.key))
+    err = machine:sync()
+    if err ~= nil then
+      return nil, err
+    end
+
     table.insert(machines, machine)
     dprint("created machine with id " .. machine:id())
   end
