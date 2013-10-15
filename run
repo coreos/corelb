@@ -10,4 +10,8 @@ if [ ! -f ${NGINX_CONF} ]; then
 	ln -s ../../example.conf ${NGINX_CONF}
 fi
 
+if [ ! -h ${NGINX_DIR}/lib ]; then
+	ln -s ../../lib ${NGINX_DIR}
+fi
+
 nginx -p ${NGINX_DIR}
