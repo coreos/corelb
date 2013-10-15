@@ -18,6 +18,81 @@ local initPrefix = "coreos.com/coreinit/"
 local machinePrefix = "machines/"
 local systemPrefix = "system/"
 
+local debug = true
+
+local dprint = function(msg)
+  if debug == true then
+    print("coreinit: " .. msg)
+  end
+end
+
+local Machine = {}
+
+function Machine:new(init, key)
+  local m = {}
+  setmetatable(m, self)
+  self.__index = self
+
+  self._id = key
+  self._etcd = init._etcd
+  return m
+end
+
+function Machine:_key()
+  return initPrefix .. machinePrefix .. self.id
+end
+
+function Machine:id()
+  return self._id
+end
+
+function Machine:ips()
+  return self._etcd:get(self:_key(self._id) .. "/network")
+end
+
+local Unit = {}
+
+-- new returns a new etcd.Init object
+function Unit:new(init, unit)
+  local u = {}
+  setmetatable(u, self)
+  self.__index = self
+  self._init = init
+  self._etcd = init._etcd
+  self._unit = unit
+  return u
+end
+
+local basename = function (string_, suffix)
+  string_ = string_ or ''
+  local basename = string.gsub (string_, '[^/]*/', '')
+  if suffix then
+    basename = string.gsub (basename, suffix, '')
+  end
+  return basename
+end
+
+function Unit:machines()
+  local dir, err = self._etcd:get(self:_unitKey(self._unit) .. "/")
+  if err ~= nil then
+    dprint("Failed to get the unit")
+    return dir, err
+  end
+
+  local machines = {}
+  for i, machine in ipairs(dir) do
+    machine = self._init:machine(basename(machine.key))
+    table.insert(machines, machine)
+    dprint("created machine with id " .. machine:id())
+  end
+
+  return machines
+end
+
+function Unit:_unitKey(unit)
+  return initPrefix .. systemPrefix .. unit
+end
+
 local Init = {}
 
 -- new returns a new etcd.Init object
@@ -34,16 +109,12 @@ function Init:_machineKey(machine)
   return initPrefix .. machinePrefix .. machine
 end
 
-function Init:_unitKey(unit)
-  return initPrefix .. systemPrefix .. unit
-end
-
 function Init:machine(machine)
-  return self._etcd:get(self:_machineKey(machine))
+  return Machine:new(self, machine)
 end
 
 function Init:unit(unit)
-  return self._etcd:get(self:_unitKey(unit))
+  return Unit:new(self, unit)
 end
 
 return Init
