@@ -95,7 +95,7 @@ function Unit:machines()
   local dir, err = self._etcd:get(self:_unitKey(self._unit) .. "/")
   if err ~= nil then
     dprint("Failed to get the unit")
-    return nil, err
+    return {}, err
   end
 
   local machines = {}
@@ -103,7 +103,7 @@ function Unit:machines()
     machine = self._init:machine(basename(machine.key))
     err = machine:sync()
     if err ~= nil then
-      return nil, err
+      return {}, err
     end
 
     table.insert(machines, machine)

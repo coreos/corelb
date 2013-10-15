@@ -39,12 +39,12 @@ end
 
 function LoadBalancer:sync()
   local machines, err = self._unit:machines()
+  self._machines = machines
+
   if err ~= nil then
     print("Error getting machines: " .. err.errorCode)
     return err
   end
-
-  self._machines = machines
 
   return nil
 end
