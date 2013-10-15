@@ -18,7 +18,7 @@ local initPrefix = "coreos.com/coreinit/"
 local machinePrefix = "machines/"
 local systemPrefix = "system/"
 
-local debug = true
+local debug = false
 
 local dprint = function(msg)
   if debug == true then
