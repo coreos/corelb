@@ -18,7 +18,7 @@ local initPrefix = "coreos.com/coreinit/"
 local machinePrefix = "machines/"
 local systemPrefix = "system/"
 
-local debug = false
+local debug = true
 
 local dprint = function(msg)
   if debug == true then
@@ -44,7 +44,7 @@ function Machine:_key()
 end
 
 function Machine:_getAddrs()
-  return self._etcd:get(self:_key(self._id) .. "/network")
+  return self._etcd:get(self:_key(self._id) .. "/addrs")
 end
 
 -- sync grabs the data on this machine from the datastore and caches it
@@ -55,7 +55,8 @@ function Machine:sync()
     return err
   end
 
-  self._addrs = value.value
+  self._addrs, err = cjson.decode(value.value)
+  dprint(self._addrs[1].addr)
 
   return nil
 end
