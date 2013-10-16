@@ -12,7 +12,8 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 
-local http = require("http")
+local http = require("resty.http")
+local hc = http:new()
 local cjson = require("cjson")
 
 local debug = false
@@ -61,7 +62,10 @@ end
 -- get grabs a key out of the etcd data store
 function Client:get(key)
   local url = self:_keyURL(key)
-  local body, code = http.request(url)
+  local ok, code, headers, status, body = hc:request{
+    url = url,
+    method = "GET"
+  }
 
   dprint("get: " .. url)
 
@@ -71,7 +75,12 @@ end
 -- set places the key and value into the etcd data store
 function Client:set(key, value)
   local url = self:_keyURL(key)
-  local body, code = http.request(url, "value="..value)
+  local ok, code, headers, status, body = hc:request{
+    url = url,
+    body = "value="..value,
+    method = "POST"
+  }
+
   dprint("set: " .. url .. " value: " .. value)
   return self:_handleRequest(body, code)
 end
