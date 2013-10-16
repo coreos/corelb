@@ -39,20 +39,28 @@ end
 
 function LoadBalancer:sync()
   local machines, err = self._unit:machines()
-  self._machines = machines
 
   if err ~= nil then
     print("Error getting machines: " .. err.errorCode)
     return err
   end
 
+  -- This has to be here so we don't overwrite our cache in case of sync failure
+  self._machines = machines
+
   return nil
 end
 
 function LoadBalancer:upstream()
-  local addr = self._machines[1]:addrs()[1].addr
+  local machine
+  if (self._machines) == nil or (self._machines[1] == nil) then
+    print("Error: No machines to load balance!")
+    return nil
+  end
+  machine = self._machines[1]
+  local addr = machine:addrs()[1].addr
   addr = string.match(addr, "(.+)/")
-  return addr .. ":8000"
+  return "http://" .. addr .. ":8000"
 end
 
 return LoadBalancer
