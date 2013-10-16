@@ -1,6 +1,6 @@
-# corelb - load balancer based on nginx and coreinit
+# corelb - a loadbalancer built on coreinit
 
-This is a proof of concept using coreinit as a backing store for an
+This is a proof of concept using coreinit/etcd as a backing store for an
 nginx loadbalancer.
 
 ### Running
